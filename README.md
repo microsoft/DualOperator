@@ -1,33 +1,95 @@
-# Project
+# Dual Operator
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+Dual Operator is an application which will register 2 physical keyboards with the Windows operating system.  On registration, Dual Operator will receive any keystrokes from the registered keyboards and can pass those keystrokes to specific applications.
 
-As the maintainer of this project, please make a few updates:
+## Requirements
+Dual Operator requires the full device ID as used by Windows for each keyboard registered.  It also requires a unique portion of the title bar text to be paired with the keyboard output.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+Applications targeted by Dual Operator must have a visible window on any available monitor.  This means that Windows services or any application that runs as a background task is not a target candidate because this type of application does not present a handle to the operating system.  This handle is a necessity for receiving keystrokes whether they come from the OS or from Dual Operator.
 
-## Contributing
+## How it works
+In normal operation, on startup Dual Operator will read from a file named OPERATORS.JSON located in the same folder as the executable file for the system.  The contents of the file look like this:
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+```
+[
+  {
+    "ApplicationTitle": "Document1 - Word",
+    "Keyboard": "\\\\?\\HID#VID_046D&PID_C541&MI_01&Col01#b&865bce8&0&0000#{884b96c3-56ef-11d1-bc8c-00a0c91405dd}"
+  },
+  {
+    "ApplicationTitle": "Untitled - Notepad",
+    "Keyboard": "\\\\?\\HID#{00001812-0000-1000-8000-00805f9b34fb}_Dev_VID&02045e_PID&0832_REV&0138_eb5864041ec3&Col01#9&19514786&0&0000#{884b96c3-56ef-11d1-bc8c-00a0c91405dd}"
+  }
+]
+```
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+The file is an array of application and keyboard objects paired together.  The ApplicationTitle element in each object is the unique window text for the application.  This value can be as much or little as desired providing the value uniquely identifies a specific window.
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+The second element is the full device identifier.  This is what Dual Operator uses to differentiate between keyboards and application targets.  If input is received from any other keyboard attached to the system, Dual Operator will ignore the input and allow Windows to direct the keystroke to another application.
 
-## Trademarks
+Please note: the device identifier does not always follow the same naming convention across devices and in many cases, even coming from the same device manufacturer.  In the example above, the first device is a Logitech G9 keyboard while the second device is a Logitech Bluetooth keyboard.  Dual Operator provides a method of learning the various keyboards attached to the system - see the section on Command Line Parameters below.
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+There can be only 2 array items defined.  Dual Operator will ignore any items beyond the first two found.
+
+Dual Operator uses the Raw Input functions contained within the USER32.DLL module contained in Windows 8 and above.  Through the use of a custom key mapper, Dual Operator can handle almost all recognizable keys along with their commonly used modifiers like ALT, CONTROL and SHIFT.
+
+Because Windows requires a visible window to receive keystrokes, Dual Operator has been written as a Windows Forms application in C# version 6 and .NET Core 5.  Even though the application targets .NET Core, Dual Operator runs solely on the Windows platform because of its use of the native keyboard handling functions built into Windows.
+
+The window the application provides contains a text control that will show the device that produced a keystroke along with the scan code, the key state and other pertinent information about the keypress event.  Although KEY DOWN key state events are shown in the text control, Dual Operator does not act on these as it only signifies that a key action has started.  If the application responded to the KEY DOWN event, then multiple combinations of keys could be achieved (e.g., CTL-SHIFT-ESC).  Only when all key combinations have generated their KEY UP events (signifying that the user is no longer pressing any key) does Dual Operator find the appropriate match for the event and pass the combined keystroke to the target application.
+
+## Command Line Parameters
+
+Dual Operator accepts a single command line parameter and an optional companion parameter (the parameter is not case-sensitive):
+
+/LIST
+This parameter will generate a list of Human Interface Device items connected to the system.  If the optional parameter is not used, the /LIST parameter will generate a file named DeviceAudit.txt in the same directory as the Dual Operator application.  This list can be opened in any standard text editor and will help guide the selection of the proper keyboard identifiers to use in the OPERATORS.JSON file.
+
+{optional} Full file path and name
+This optional parameter will specify where to place the output from /LIST parameter.
+
+### Examples
+
+``
+dualoperator.exe /list
+``
+This will create a file in the current directory named DeviceAudit.txt
+
+``
+dualoperator.exe /list "C:\Temp\DeviceList.txt"
+``
+This will create the same output in a file named DeviceList.txt in the C:\Temp directory
+
+## Demo app
+
+There is a demo target application provided with the Dual Operator code.  This application looks very similar to the Dual Operator app but is intended to be a target for Dual Operator to use while testing.
+
+In the demo app directory there is a file named APPTITLE.JSON.  This provides a unique title for the demo app making it easy to run 2 instances with different window names.  The structure of the file looks like this:
+
+```
+[
+  {
+    "ApplicationTitle": "Demo App 1"
+  }
+]
+```
+
+The ApplicationTitle element defines the text for the app window.  It is possible to put a copy of this demo app in separate directories and by changing the ApplicationTitle to be unique values in each directory, two versions of this app can run as targets for Dual Operator.
+
+## Code structure
+
+### Root
+OperatorManager: the form used by Dual Operator to intercept keystrokes and all other associated top-level code and configuration objects
+
+### Enumerations
+Enumerations used throughout the application, such as KeyEvent
+
+### Helpers
+Code that helps drive function within the application (e.g. the custom Key Mapper component)
+
+### Models
+Classes used to serialize/deserialze data between systems (e.g., reading configuration from the OPERATORS.JSON file)
+
+### Structures
+C# STRUCT objects used to pass and receive information from the Raw Input functions (e.g., DeviceInfo which has metadata about the device which generated an event)
+
+
