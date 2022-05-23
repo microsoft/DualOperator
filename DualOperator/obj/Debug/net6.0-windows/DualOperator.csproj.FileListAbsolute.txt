@@ -16,3 +16,4 @@ C:\Development\MS IoT Project\DualOperator\DualOperator\obj\Debug\net6.0-windows
 C:\Development\MS IoT Project\DualOperator\DualOperator\obj\Debug\net6.0-windows\DualOperator.pdb
 C:\Development\MS IoT Project\DualOperator\DualOperator\obj\Debug\net6.0-windows\DualOperator.genruntimeconfig.cache
 C:\Development\MS IoT Project\DualOperator\DualOperator\obj\Debug\net6.0-windows\ref\DualOperator.dll
+C:\Development\MS IoT Project\DualOperator\DualOperator\obj\Debug\net6.0-windows\DualOperator.ScanOperator.resources

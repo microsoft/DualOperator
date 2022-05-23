@@ -24,6 +24,10 @@ namespace DualOperator
                         Win32.DeviceAudit(args.Length > 1 ? args[1] : @"DeviceAudit.txt");
                         break;
 
+                    case "/SCAN":
+                        Application.Run(new ScanOperator());
+                        break;
+
                     default:
                         StringBuilder message = new StringBuilder();
                         message.AppendLine(@"DualOperator takes up to 2 parameters:");
