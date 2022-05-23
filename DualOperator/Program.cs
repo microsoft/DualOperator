@@ -1,3 +1,4 @@
+using System.Management;
 using System.Text;
 using DualOperator.Helpers;
 
@@ -13,6 +14,32 @@ namespace DualOperator
         {
             // Prepare to run
             ApplicationConfiguration.Initialize();
+
+            // If this is compiled code, check the Operating System SKU to ensure that we are running IoT Enterprise in some flavor
+#if DEBUG != true
+            int osSKU = 0;
+            ManagementClass mgmtClass = new ManagementClass("Win32_OperatingSystem");
+            ManagementObjectCollection mgmtObj = mgmtClass.GetInstances();
+            PropertyDataCollection properties = mgmtClass.Properties;
+            foreach (ManagementObject obj in mgmtObj)
+            {
+                try
+                {
+                    osSKU = Convert.ToInt32(obj.Properties["OperatingSystemSKU"].Value);
+                    continue;
+                }
+                catch 
+                { }
+            }
+
+            if (osSKU != 188 || osSKU != 191)
+            {
+                StringBuilder message = new StringBuilder();
+                message.AppendLine(@"DualOperator is intended to run only Windows IoT Enterprise only.");
+                message.AppendLine(@"Click OK to exit this application.");
+                MessageBox.Show(message.ToString(), @"Dual Operator", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+            }
+#endif
 
             // Check for command line arguments
             if (args.Length > 0)
