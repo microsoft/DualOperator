@@ -1,0 +1,3 @@
+# Ignore both the BIN and OBJ folders
+bin
+obj
