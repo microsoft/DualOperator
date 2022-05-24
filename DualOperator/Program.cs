@@ -35,7 +35,7 @@ namespace DualOperator
             if (osSKU != 188 || osSKU != 191)
             {
                 StringBuilder message = new StringBuilder();
-                message.AppendLine(@"DualOperator is intended to run only Windows IoT Enterprise only.");
+                message.AppendLine(@"DualOperator is intended to run on Windows IoT Enterprise only.");
                 message.AppendLine(@"Click OK to exit this application.");
                 MessageBox.Show(message.ToString(), @"Dual Operator", MessageBoxButtons.OK, MessageBoxIcon.Stop);
             }
