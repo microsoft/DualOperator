@@ -2,7 +2,8 @@
 
 Dual Operator is an application which will register 2 physical keyboards with the Windows operating system.  On registration, Dual Operator will receive any keystrokes from the registered keyboards and can pass those keystrokes to specific applications.
 
-Teaser Video: http://aka.ms/dualoperatordemo
+Teaser Trailer: http://aka.ms/dualoperatordemo
+MS Build 2022: https://aka.ms/MSBuild2022-DualOperator
 
 ## Requirements
 Dual Operator requires the full device ID as used by Windows for each keyboard registered.  It also requires a unique portion of the title bar text to be paired with the keyboard output.
